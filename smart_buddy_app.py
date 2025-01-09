@@ -43,11 +43,11 @@ clf.fit(x, y)
 def evaluate_arithmetic(expression):
     try:
         # Remove spaces for easier parsing
-        expression = expression.replace(" ", "")
+        math_expression = re.search(r"[\d\+\-\*/\(\)\.]+", expression.replace(" ", ""))
 
         # Validate if the input contains only numbers and valid arithmetic operators
-        if re.match(r"^[\d\+\-\*/\(\)\.]+$", expression):
-            result = eval(expression)  # Evaluate the expression safely
+        if re.match(r"^[\d\+\-\*/\(\)\.]+$", math_expression):
+            result = eval(math_expression)  # Evaluate the expression safely
             return f"The result is: {result}"
         else:
             return "Invalid arithmetic expression. Please ensure you only use numbers and operators (+, -, *, /)."
