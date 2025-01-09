@@ -41,18 +41,19 @@ clf.fit(x, y)
 
 # Function to evaluate basic arithmetic
 def evaluate_arithmetic(expression):
-    math_pattern = r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
-    tokens = re.findall(math_pattern, expression.replace(" ", ""))
-    
-    if tokens:
-        try:
-            expression2 = "".join(tokens)
-            result = eval(expression2)  
-            return str(result)
-        except Exception:
-            return "Sorry, I couldn't evaluate that expression."
-    
-    return None
+    try:
+        # Remove spaces for easier parsing
+        expression = expression.replace(" ", "")
+
+        # Validate if the input contains only numbers and valid arithmetic operators
+        if re.match(r"^[\d\+\-\*/\(\)\.]+$", expression):
+            result = eval(expression)  # Evaluate the expression safely
+            return f"The result is: {result}"
+        else:
+            return "Invalid arithmetic expression. Please ensure you only use numbers and operators (+, -, *, /)."
+    except Exception:
+        return "Sorry, I couldn't evaluate that expression. Please try again with a valid arithmetic expression."
+
 
 # Function to solve quadratic equations
 def solve_quadratic(equation):
@@ -94,8 +95,6 @@ def plot_equation(equation):
 
 # Main chatbot function
 def chatbot(input_text):
-    input_text = input_text.lower().strip()
-
     # Detect quadratic equations
     if re.search(r"\bx\^2\b", input_text):
         return solve_quadratic(input_text)
@@ -107,7 +106,6 @@ def chatbot(input_text):
     # Detect basic arithmetic
     elif re.search(r"^[\d\s\+\-\*/\(\)\.]+$", input_text):
         return evaluate_arithmetic(input_text)
-
     # Process intents if no arithmetic expression or equation found
     input_text_transformed = vectorizer.transform([input_text])
     tag = clf.predict(input_text_transformed)[0]
