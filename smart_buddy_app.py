@@ -13,7 +13,6 @@ from sympy import symbols, Eq, solve
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-# Fix SSL issue for nltk downloads
 ssl._create_default_https_context = ssl._create_unverified_context
 nltk.data.path.append(os.path.abspath("nltk_data"))
 nltk.download("punkt")
@@ -42,11 +41,18 @@ clf.fit(x, y)
 
 # Function to evaluate basic arithmetic
 def evaluate_arithmetic(expression):
-    try:
-        result = eval(expression)  
-        return f"The result is: {result}"
-    except Exception:
-        return "Sorry, I couldn't evaluate that expression."
+    math_pattern = r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
+    tokens = re.findall(math_pattern, expression.replace(" ", ""))
+    
+    if tokens:
+        try:
+            expression2 = "".join(tokens)
+            result = eval(expression2)  
+            return str(result)
+        except Exception:
+            return "Sorry, I couldn't evaluate that expression."
+    
+    return None
 
 # Function to solve quadratic equations
 def solve_quadratic(equation):
@@ -99,7 +105,7 @@ def chatbot(input_text):
         return solve_linear(input_text)
 
     # Detect basic arithmetic
-    elif re.match(r"^[\d\s\+\-\*/\(\)\.]+$", input_text):
+    elif re.search(r"^[\d\s\+\-\*/\(\)\.]+$", input_text):
         return evaluate_arithmetic(input_text)
 
     # Process intents if no arithmetic expression or equation found
@@ -163,5 +169,27 @@ def main():
 
     elif choice == "About":
         st.write("SmartBuddy is designed to help with math problems and answer queries.")
+        st.write("This project aims to develop a chatbot that comprehends and responds to user inquiries based on predefined intents. The chatbot utilizes Natural Language Processing (NLP) techniques and Logistic Regression to interpret user input effectively.")
+
+        st.subheader("Project Overview:")
+        st.write("""
+        The project consists of two main components:
+        1. The chatbot is trained using NLP methods and a Logistic Regression model on a set of labeled intents.
+        2. Streamlit is used to create a user-friendly web interface for the chatbot, allowing users to interact seamlessly.
+        """)
+
+        st.subheader("Dataset:")
+        st.write("""
+        The dataset comprises a collection of labeled intents and corresponding entities. It is structured as follows:
+        - Intents: Categories representing user intent (e.g., "greeting", "movies", "math").
+        - Entities: Specific phrases extracted from user input (e.g., "Hi", "What is 23+4-5?", etc..)
+        - Text: The actual user input.
+        """)
+
+        st.subheader("Streamlit Chatbot Interface:")
+        st.write("The chatbot interface is designed using Streamlit, featuring a text input box for user queries and a display area for chatbot responses. The trained model generates replies based on user input.")
+
+        st.subheader("Conclusion:")
+        st.write("This project successfully creates a chatbot capable of understanding and responding to user inquiries based on predefined intents. By leveraging NLP and Logistic Regression, along with Streamlit for the interface, the chatbot can be further developed with additional data and advanced NLP techniques.")
 if __name__ == "__main__":
     main()
