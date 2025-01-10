@@ -93,22 +93,21 @@ def solve_quadratic(equation):
     except Exception as e:
         return f"Error solving quadratic equation: {e}"
 
-
-
 def solve_linear(equation):
     try:
-        # Remove spaces and normalize exponent notation
-        equation = equation.replace(" ", "").replace("^", "**")
+        # Extract the mathematical equation from input text
+        equation = "".join(re.findall(r"[0-9xX\+\-\=\*\^\.]+", equation)).replace("^", "**")
         
-        # Use regex to validate and extract the linear equation
-        match = re.match(r"([-+]?\d*\.?\d*)x([+-]?\d*\.?\d*)=(.+)", equation)
+        # Regular expression to extract coefficients and RHS
+        match = re.findall(r"([-+]?\d*\.?\d*)x([+-]?\d*\.?\d*)=(.+)", equation)
         if not match:
             return "Please enter a valid linear equation in the form ax + b = c."
         
         # Extract coefficients and RHS
-        a = float(match.group(1)) if match.group(1) not in ("", "+", "-") else (1 if match.group(1) == "+" else -1)
-        b = float(match.group(2)) if match.group(2) else 0
-        rhs = float(eval(match.group(3)))  # Evaluate RHS to handle expressions like 2+3
+        a, b, rhs = match[0]
+        a = float(a) if a not in ("", "+", "-") else (1 if a == "+" else -1)
+        b = float(b) if b else 0
+        rhs = float(eval(rhs))  # Evaluate RHS to handle expressions like 2+3
         
         # Solve the linear equation ax + b = rhs
         x = symbols("x")
@@ -116,7 +115,8 @@ def solve_linear(equation):
         solution = solve(eq, x)
         return f"The solution is: {solution[0]:.2f}"
     except Exception as e:
-        return f"Error: {e}"
+        return f"Error solving linear equation: {e}"
+
 
 
 # Function to extract and classify mathematical expressions
