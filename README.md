@@ -2,10 +2,8 @@
 **SmartBuddy: Your Friendly AI Chatbot** is a Python-based chatbot that uses NLP (nltk) and machine learning (scikit-learn) to understand user intents and deliver relevant responses. It features conversation history tracking and an interactive web interface built with Streamlit.
 <br>
 Author - Safa Mahveen
-Here is a `README.md` for your project:
 
----
-#OVERVIEW
+## OVERVIEW
 ## Features
 
 - **Mathematical Problem Solving**: SmartBuddy can solve arithmetic expressions, linear equations, and quadratic equations.
