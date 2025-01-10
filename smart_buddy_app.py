@@ -48,29 +48,37 @@ def evaluate_arithmetic(expression):
         tokens = re.findall(math_pattern, expression)
         expression_2 = "".join(tokens)
         result = eval(expression_2)
-        return str(result)
+        return "The result of given arithmetic expression is"+str(result)
     except Exception:
         return "Sorry, I couldn't evaluate that expression."
 
 # Function to solve quadratic equations
 def solve_quadratic(equation):
     try:
-        # Replace ^ with ** for Python compatibility
-        equation = equation.replace("^", "**")
+        # Parse the equation into components
+        equation = equation.replace(" ", "").replace("^", "**")
+        match = re.match(r"([+-]?\d*)x\*\*2([+-]\d*)x([+-]\d*)=0", equation)
+        if not match:
+            return "Please enter a valid quadratic equation in the form ax^2 + bx + c = 0."
 
-        # Split into LHS and RHS
-        lhs, rhs = equation.split("=")
-        rhs = rhs.strip()  # Strip spaces
+        # Extract coefficients
+        a = float(match.group(1)) if match.group(1) else 1
+        b = float(match.group(2)) if match.group(2) else 0
+        c = float(match.group(3)) if match.group(3) else 0
 
-        # Form the symbolic equation
-        x = symbols("x")
-        eq = Eq(eval(lhs), eval(rhs))
-
-        # Solve and format solutions
-        solutions = solve(eq, x)
-        return f"The solutions are: {', '.join(map(str, solutions))}"
-    except Exception:
-        return "Please enter a valid quadratic equation in the form ax^2 + bx + c = 0."
+        # Solve using the quadratic formula
+        discriminant = b**2 - 4*a*c
+        if discriminant > 0:
+            root1 = (-b + discriminant**0.5) / (2*a)
+            root2 = (-b - discriminant**0.5) / (2*a)
+            return f"The solutions are: {root1:.2f} and {root2:.2f}"
+        elif discriminant == 0:
+            root = -b / (2*a)
+            return f"The solution is: {root:.2f}"
+        else:
+            return "No real solutions exist for the given equation."
+    except Exception as e:
+        return f"Error solving quadratic equation: {e}"
 
 # Function to solve linear equations
 def solve_linear(equation):
