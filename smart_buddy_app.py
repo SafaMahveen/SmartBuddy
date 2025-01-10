@@ -42,31 +42,24 @@ clf.fit(x, y)
 # Function to evaluate basic arithmetic
 def evaluate_arithmetic(expression):
     try:
-        # Remove spaces for easier parsing
-        expression = expression.replace(" ", "")
-        math_pattern = r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
-        tokens = re.findall(math_pattern, expression)
-        expression_2 = "".join(tokens)
-        result = eval(expression_2)
-        return "The result of given arithmetic expression is "+str(result)
+        # Evaluate the arithmetic expression safely
+        result = eval(expression)
+        return f"The result of the given arithmetic expression is {result}"
     except Exception:
         return "Sorry, I couldn't evaluate that expression."
 
 # Function to solve quadratic equations
 def solve_quadratic(equation):
     try:
-        # Parse the equation into components
         equation = equation.replace(" ", "").replace("^", "**")
         match = re.match(r"([+-]?\d*)x\*\*2([+-]\d*)x([+-]\d*)=0", equation)
         if not match:
             return "Please enter a valid quadratic equation in the form ax^2 + bx + c = 0."
 
-        # Extract coefficients
         a = float(match.group(1)) if match.group(1) else 1
         b = float(match.group(2)) if match.group(2) else 0
         c = float(match.group(3)) if match.group(3) else 0
 
-        # Solve using the quadratic formula
         discriminant = b**2 - 4*a*c
         if discriminant > 0:
             root1 = (-b + discriminant**0.5) / (2*a)
@@ -83,69 +76,47 @@ def solve_quadratic(equation):
 # Function to solve linear equations
 def solve_linear(equation):
     try:
-        # Replace ^ with ** for Python compatibility
         equation = equation.replace("^", "**")
-
-        # Split into LHS and RHS
         lhs, rhs = equation.split("=")
-        rhs = rhs.strip()  # Strip spaces
-
-        # Form the symbolic equation
         x = symbols("x")
-        eq = Eq(eval(lhs), eval(rhs))
-
-        # Solve and format the solution
+        eq = Eq(eval(lhs.strip()), eval(rhs.strip()))
         solution = solve(eq, x)
         return f"The solution is: {', '.join(map(str, solution))}"
     except Exception:
         return "Please enter a valid linear equation in the form ax + b = c."
 
 # Function to extract and classify mathematical expressions
-# Function to extract and classify mathematical expressions
 def extract_math_expression(input_text):
     """
     Extract and classify the mathematical expression or equation.
-    Returns a dictionary with type ('arithmetic', 'linear', 'quadratic') and the cleaned expression.
     """
     try:
-        # Clean input by replacing "^" with "**" for Python compatibility
+        # Extract possible math-related expressions using regex
         input_text = input_text.replace("^", "**")
-
-        # Extract the mathematical part of the input
-        math_pattern = r"([-+]?[\dx\*\s=+^/().]+)"
-        match = re.search(math_pattern, input_text)
+        match = re.search(r"([-+*/\d\sx=.^]+)", input_text)
         if match:
             math_part = match.group(1).strip()
-        else:
-            return None
 
-        # Regex patterns for different types of math expressions
-        arithmetic_pattern = r"^[\d\+\-\*/\(\)\.\s]+$"  # Matches basic arithmetic
-        linear_pattern = r"[-+]?\d*x[-+x\d\s]*=[-+\d\s]*$"  # Matches linear equations
-        quadratic_pattern = r"[-+]?\d*x\*\*2[-+x\d\s]*=[-+\d\s]*$"  # Matches quadratic equations
+            # Regex patterns for different types of math expressions
+            arithmetic_pattern = r"^[\d\+\-\*/\(\)\.\s]+$"
+            linear_pattern = r"[-+]?\d*x[-+x\d\s]*=[-+\d\s]*$"
+            quadratic_pattern = r"[-+]?\d*x\*\*2[-+x\d\s]*=[-+\d\s]*$"
 
-        # Check for quadratic equations
-        if re.search(quadratic_pattern, math_part):
-            return {"type": "quadratic", "expression": math_part}
+            if re.fullmatch(quadratic_pattern, math_part):
+                return {"type": "quadratic", "expression": math_part}
+            elif re.fullmatch(linear_pattern, math_part):
+                return {"type": "linear", "expression": math_part}
+            elif re.fullmatch(arithmetic_pattern, math_part):
+                return {"type": "arithmetic", "expression": math_part}
 
-        # Check for linear equations
-        elif re.search(linear_pattern, math_part):
-            return {"type": "linear", "expression": math_part}
-
-        # Check for basic arithmetic
-        elif re.search(arithmetic_pattern, math_part):
-            return {"type": "arithmetic", "expression": math_part}
-
-        # If no match, return None
         return None
     except Exception as e:
         return None
 
-
 # Function to process the extracted math expression
 def process_math_expression(expression_data):
     """
-    Processes the extracted math expression or equation based on its type.
+    Processes the extracted math expression or equation.
     """
     if not expression_data:
         return "I couldn't find a valid mathematical expression in your input."
@@ -153,26 +124,21 @@ def process_math_expression(expression_data):
     expr_type = expression_data["type"]
     expr = expression_data["expression"]
 
-    try:
-        if expr_type == "arithmetic":
-            return evaluate_arithmetic(expr)
-        elif expr_type == "linear":
-            return solve_linear(expr)
-        elif expr_type == "quadratic":
-            return solve_quadratic(expr)
-        else:
-            return "I'm sorry, I couldn't understand the type of math query."
-    except Exception as e:
-        return f"An error occurred while processing the expression: {e}"
+    if expr_type == "arithmetic":
+        return evaluate_arithmetic(expr)
+    elif expr_type == "linear":
+        return solve_linear(expr)
+    elif expr_type == "quadratic":
+        return solve_quadratic(expr)
+    else:
+        return "I'm sorry, I couldn't understand the type of math query."
 
 # Main chatbot function
 def chatbot(input_text):
-    # Try extracting and solving a math expression
     math_data = extract_math_expression(input_text)
     if math_data:
         return process_math_expression(math_data)
 
-    # Process intents if no arithmetic expression or equation found
     input_text_transformed = vectorizer.transform([input_text])
     tag = clf.predict(input_text_transformed)[0]
     for intent in intents:
@@ -180,7 +146,6 @@ def chatbot(input_text):
             response = random.choice(intent["responses"])
             return response
 
-    # Fallback for unrecognized input
     return "I'm sorry, I didn't understand that. Can you try rephrasing?"
 
 # Function to plot equations
