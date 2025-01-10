@@ -67,6 +67,9 @@ smartbuddy-chatbot/
 ├── requirements.txt     # List of dependencies
 └── README.md            # Project documentation (this file)
 ```
+## Live Demo
+You can view and interact with the live version of SmartBuddy on the following link:
+[SmartBuddy - Your Friendly AI Chatbot](https://smartbuddy-your-friendly-ai-chatbot.streamlit.app/)
 
 ### Explanation of the Code
 
@@ -90,6 +93,3 @@ smartbuddy-chatbot/
 
 5. **Conversation Logging**: Every user interaction and chatbot response is logged in `chat_log.csv` for future reference.
 
-## Contributing
-
-If you would like to contribute to the development of SmartBuddy, feel free to fork the repository and submit a pull request with your changes. 
