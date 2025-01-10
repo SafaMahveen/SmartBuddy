@@ -44,24 +44,13 @@ def evaluate_arithmetic(expression):
     try:
         # Remove spaces for easier parsing
         expression = expression.replace(" ", "")
-
-        # Extract the arithmetic expression using regex
-        math_expression = re.search(r"[\d\+\-\*/\(\)\.]+", expression)
-        
-        if math_expression:  # Check if a valid match is found
-            # Extract the matched string
-            math_expression = math_expression.group()
-
-            # Validate the expression (contains only numbers and operators)
-            if re.match(r"^[\d\+\-\*/\(\)\.]+$", math_expression):
-                result = eval(math_expression)  # Evaluate the expression
-                return f"The result is: {result}"
-            else:
-                return "Invalid arithmetic expression. Please ensure you only use numbers and operators (+, -, *, /)."
-        else:
-            return "No valid arithmetic expression found in your input."
-    except Exception as e:
-        return "Sorry, I couldn't evaluate that expression. Please try again with a valid arithmetic expression."
+        math_pattern=r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
+        tokens = re.findall(math_pattern,expression)
+        expression_2 = "".join(tokens)
+        result = eval(expression_2)  
+        return str(result)
+    except Exception:
+        return "Sorry, I couldn't evaluate that expression."
 
 
 # Function to solve quadratic equations
