@@ -94,26 +94,30 @@ def solve_quadratic(equation):
         return f"Error solving quadratic equation: {e}"
 
 
+
 def solve_linear(equation):
     try:
         # Remove spaces and normalize exponent notation
         equation = equation.replace(" ", "").replace("^", "**")
-
-        # Split into LHS and RHS
-        lhs, rhs = equation.split("=")
-        rhs = rhs.strip()  # Strip spaces
-
-        # Extract and solve the equation using symbolic math
+        
+        # Use regex to validate and extract the linear equation
+        match = re.match(r"([-+]?\d*\.?\d*)x([+-]?\d*\.?\d*)=(.+)", equation)
+        if not match:
+            return "Please enter a valid linear equation in the form ax + b = c."
+        
+        # Extract coefficients and RHS
+        a = float(match.group(1)) if match.group(1) not in ("", "+", "-") else (1 if match.group(1) == "+" else -1)
+        b = float(match.group(2)) if match.group(2) else 0
+        rhs = float(eval(match.group(3)))  # Evaluate RHS to handle expressions like 2+3
+        
+        # Solve the linear equation ax + b = rhs
         x = symbols("x")
-        eq = Eq(eval(lhs), eval(rhs))
-
-        # Solve and return the solution
+        eq = Eq(a * x + b, rhs)
         solution = solve(eq, x)
-        if not solution:
-            return "No solution exists for the given equation."
-        return f"The solution is: {', '.join(map(str, solution))}"
+        return f"The solution is: {solution[0]:.2f}"
     except Exception as e:
         return f"Error: {e}"
+
 
 # Function to extract and classify mathematical expressions
 def extract_math_expression(input_text):
