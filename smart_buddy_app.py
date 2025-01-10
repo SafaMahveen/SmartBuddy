@@ -48,7 +48,7 @@ def evaluate_arithmetic(expression):
         tokens = re.findall(math_pattern, expression)
         expression_2 = "".join(tokens)
         result = eval(expression_2)
-        return "The result of given arithmetic expression is"+str(result)
+        return "The result of given arithmetic expression is "+str(result)
     except Exception:
         return "Sorry, I couldn't evaluate that expression."
 
@@ -101,6 +101,7 @@ def solve_linear(equation):
         return "Please enter a valid linear equation in the form ax + b = c."
 
 # Function to extract and classify mathematical expressions
+# Function to extract and classify mathematical expressions
 def extract_math_expression(input_text):
     """
     Extract and classify the mathematical expression or equation.
@@ -110,27 +111,36 @@ def extract_math_expression(input_text):
         # Clean input by replacing "^" with "**" for Python compatibility
         input_text = input_text.replace("^", "**")
 
+        # Extract the mathematical part of the input
+        math_pattern = r"([-+]?[\dx\*\s=+^/().]+)"
+        match = re.search(math_pattern, input_text)
+        if match:
+            math_part = match.group(1).strip()
+        else:
+            return None
+
         # Regex patterns for different types of math expressions
-        arithmetic_pattern = r"[\d\+\-\*/\(\)\.\s]+$"  # Matches basic arithmetic
+        arithmetic_pattern = r"^[\d\+\-\*/\(\)\.\s]+$"  # Matches basic arithmetic
         linear_pattern = r"[-+]?\d*x[-+x\d\s]*=[-+\d\s]*$"  # Matches linear equations
         quadratic_pattern = r"[-+]?\d*x\*\*2[-+x\d\s]*=[-+\d\s]*$"  # Matches quadratic equations
 
         # Check for quadratic equations
-        if re.search(quadratic_pattern, input_text):
-            return {"type": "quadratic", "expression": input_text.strip()}
+        if re.search(quadratic_pattern, math_part):
+            return {"type": "quadratic", "expression": math_part}
 
         # Check for linear equations
-        elif re.search(linear_pattern, input_text):
-            return {"type": "linear", "expression": input_text.strip()}
+        elif re.search(linear_pattern, math_part):
+            return {"type": "linear", "expression": math_part}
 
         # Check for basic arithmetic
-        elif re.search(arithmetic_pattern, input_text):
-            return {"type": "arithmetic", "expression": input_text.strip()}
+        elif re.search(arithmetic_pattern, math_part):
+            return {"type": "arithmetic", "expression": math_part}
 
         # If no match, return None
         return None
     except Exception as e:
         return None
+
 
 # Function to process the extracted math expression
 def process_math_expression(expression_data):
