@@ -7,6 +7,7 @@ import csv
 import streamlit as st
 import nltk
 import ssl
+import cmath
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy import symbols, Eq, solve
@@ -52,53 +53,67 @@ def evaluate_arithmetic(expression):
     except Exception:
         return "Sorry, I couldn't evaluate that expression."
 
-# Function to solve quadratic equations
+
+
 def solve_quadratic(equation):
     try:
-        # Parse the equation into components
+        # Remove spaces and normalize exponent notation
         equation = equation.replace(" ", "").replace("^", "**")
-        match = re.match(r"([+-]?\d*)x\*\*2([+-]\d*)x([+-]\d*)=0", equation)
+        
+        # Regular expression to extract quadratic terms
+        match = re.findall(r"([+-]?\d*)x\*\*2([+-]?\d*)x([+-]?\d*)=0", equation)
         if not match:
             return "Please enter a valid quadratic equation in the form ax^2 + bx + c = 0."
-
-        # Extract coefficients
-        a = float(match.group(1)) if match.group(1) else 1
-        b = float(match.group(2)) if match.group(2) else 0
-        c = float(match.group(3)) if match.group(3) else 0
+        
+        # Extract coefficients with defaults if missing
+        a, b, c = match[0]
+        a = float(a) if a else 1
+        b = float(b) if b else 0
+        c = float(c) if c else 0
 
         # Solve using the quadratic formula
         discriminant = b**2 - 4*a*c
+        
+        # When discriminant is positive, we have two real roots
         if discriminant > 0:
-            root1 = (-b + discriminant**0.5) / (2*a)
-            root2 = (-b - discriminant**0.5) / (2*a)
-            return f"The solutions are: {root1:.2f} and {root2:.2f}"
+            root1 = (-b + cmath.sqrt(discriminant)) / (2*a)
+            root2 = (-b - cmath.sqrt(discriminant)) / (2*a)
+            return f"The solutions are real: {root1.real:.2f} and {root2.real:.2f}"
+        
+        # When discriminant is zero, we have one real root
         elif discriminant == 0:
             root = -b / (2*a)
-            return f"The solution is: {root:.2f}"
+            return f"The solution is real: {root:.2f}"
+        
+        # When discriminant is negative, we have two complex (non-real) roots
         else:
-            return "No real solutions exist for the given equation."
+            root1 = (-b + cmath.sqrt(discriminant)) / (2*a)
+            root2 = (-b - cmath.sqrt(discriminant)) / (2*a)
+            return f"The solutions are complex: {root1} and {root2}"
     except Exception as e:
         return f"Error solving quadratic equation: {e}"
 
-# Function to solve linear equations
+
 def solve_linear(equation):
     try:
-        # Replace ^ with ** for Python compatibility
-        equation = equation.replace("^", "**")
+        # Remove spaces and normalize exponent notation
+        equation = equation.replace(" ", "").replace("^", "**")
 
         # Split into LHS and RHS
         lhs, rhs = equation.split("=")
         rhs = rhs.strip()  # Strip spaces
 
-        # Form the symbolic equation
+        # Extract and solve the equation using symbolic math
         x = symbols("x")
         eq = Eq(eval(lhs), eval(rhs))
 
-        # Solve and format the solution
+        # Solve and return the solution
         solution = solve(eq, x)
+        if not solution:
+            return "No solution exists for the given equation."
         return f"The solution is: {', '.join(map(str, solution))}"
-    except Exception:
-        return "Please enter a valid linear equation in the form ax + b = c."
+    except Exception as e:
+        return f"Error: {e}"
 
 # Function to extract and classify mathematical expressions
 def extract_math_expression(input_text):
