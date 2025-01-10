@@ -44,20 +44,29 @@ def evaluate_arithmetic(expression):
     try:
         # Remove spaces for easier parsing
         expression = expression.replace(" ", "")
-        math_pattern=r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
-        tokens = re.findall(math_pattern,expression)
+        math_pattern = r'[-+]?\d*\.\d+|[-+]?\d+|[+\-*/()]'
+        tokens = re.findall(math_pattern, expression)
         expression_2 = "".join(tokens)
-        result = eval(expression_2)  
+        result = eval(expression_2)
         return str(result)
     except Exception:
         return "Sorry, I couldn't evaluate that expression."
 
-
 # Function to solve quadratic equations
 def solve_quadratic(equation):
     try:
+        # Replace ^ with ** for Python compatibility
+        equation = equation.replace("^", "**")
+
+        # Split into LHS and RHS
+        lhs, rhs = equation.split("=")
+        rhs = rhs.strip()  # Strip spaces
+
+        # Form the symbolic equation
         x = symbols("x")
-        eq = Eq(eval(equation.replace("=", "-(") + ")"), 0)
+        eq = Eq(eval(lhs), eval(rhs))
+
+        # Solve and format solutions
         solutions = solve(eq, x)
         return f"The solutions are: {', '.join(map(str, solutions))}"
     except Exception:
@@ -66,12 +75,95 @@ def solve_quadratic(equation):
 # Function to solve linear equations
 def solve_linear(equation):
     try:
+        # Replace ^ with ** for Python compatibility
+        equation = equation.replace("^", "**")
+
+        # Split into LHS and RHS
+        lhs, rhs = equation.split("=")
+        rhs = rhs.strip()  # Strip spaces
+
+        # Form the symbolic equation
         x = symbols("x")
-        eq = Eq(eval(equation.replace("=", "-(") + ")"), 0)
+        eq = Eq(eval(lhs), eval(rhs))
+
+        # Solve and format the solution
         solution = solve(eq, x)
-        return f"The solution is: {solution}"
+        return f"The solution is: {', '.join(map(str, solution))}"
     except Exception:
         return "Please enter a valid linear equation in the form ax + b = c."
+
+# Function to extract and classify mathematical expressions
+def extract_math_expression(input_text):
+    """
+    Extract and classify the mathematical expression or equation.
+    Returns a dictionary with type ('arithmetic', 'linear', 'quadratic') and the cleaned expression.
+    """
+    try:
+        # Clean input by replacing "^" with "**" for Python compatibility
+        input_text = input_text.replace("^", "**")
+
+        # Regex patterns for different types of math expressions
+        arithmetic_pattern = r"[\d\+\-\*/\(\)\.\s]+$"  # Matches basic arithmetic
+        linear_pattern = r"[-+]?\d*x[-+x\d\s]*=[-+\d\s]*$"  # Matches linear equations
+        quadratic_pattern = r"[-+]?\d*x\*\*2[-+x\d\s]*=[-+\d\s]*$"  # Matches quadratic equations
+
+        # Check for quadratic equations
+        if re.search(quadratic_pattern, input_text):
+            return {"type": "quadratic", "expression": input_text.strip()}
+
+        # Check for linear equations
+        elif re.search(linear_pattern, input_text):
+            return {"type": "linear", "expression": input_text.strip()}
+
+        # Check for basic arithmetic
+        elif re.search(arithmetic_pattern, input_text):
+            return {"type": "arithmetic", "expression": input_text.strip()}
+
+        # If no match, return None
+        return None
+    except Exception as e:
+        return None
+
+# Function to process the extracted math expression
+def process_math_expression(expression_data):
+    """
+    Processes the extracted math expression or equation based on its type.
+    """
+    if not expression_data:
+        return "I couldn't find a valid mathematical expression in your input."
+
+    expr_type = expression_data["type"]
+    expr = expression_data["expression"]
+
+    try:
+        if expr_type == "arithmetic":
+            return evaluate_arithmetic(expr)
+        elif expr_type == "linear":
+            return solve_linear(expr)
+        elif expr_type == "quadratic":
+            return solve_quadratic(expr)
+        else:
+            return "I'm sorry, I couldn't understand the type of math query."
+    except Exception as e:
+        return f"An error occurred while processing the expression: {e}"
+
+# Main chatbot function
+def chatbot(input_text):
+    # Try extracting and solving a math expression
+    math_data = extract_math_expression(input_text)
+    if math_data:
+        return process_math_expression(math_data)
+
+    # Process intents if no arithmetic expression or equation found
+    input_text_transformed = vectorizer.transform([input_text])
+    tag = clf.predict(input_text_transformed)[0]
+    for intent in intents:
+        if intent["tag"] == tag:
+            response = random.choice(intent["responses"])
+            return response
+
+    # Fallback for unrecognized input
+    return "I'm sorry, I didn't understand that. Can you try rephrasing?"
 
 # Function to plot equations
 def plot_equation(equation):
@@ -90,30 +182,6 @@ def plot_equation(equation):
         st.pyplot(plt)
     except Exception:
         st.write("Unable to plot the equation. Please ensure it's a valid mathematical expression.")
-
-# Main chatbot function
-def chatbot(input_text):
-    # Detect quadratic equations
-    if re.search(r"\bx\^2\b", input_text):
-        return solve_quadratic(input_text)
-
-    # Detect linear equations
-    elif re.search(r"\bx\b", input_text):
-        return solve_linear(input_text)
-
-    # Detect basic arithmetic
-    elif re.search(r"^[\d\s\+\-\*/\(\)\.]+$", input_text):
-        return evaluate_arithmetic(input_text)
-    # Process intents if no arithmetic expression or equation found
-    input_text_transformed = vectorizer.transform([input_text])
-    tag = clf.predict(input_text_transformed)[0]
-    for intent in intents:
-        if intent["tag"] == tag:
-            response = random.choice(intent["responses"])
-            return response
-
-    # Fallback for unrecognized input
-    return "I'm sorry, I didn't understand that. Can you try rephrasing?"
 
 # Main Streamlit app
 def main():
