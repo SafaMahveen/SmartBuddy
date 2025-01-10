@@ -191,47 +191,6 @@ def chatbot(input_text):
     # Fallback for unrecognized input
     return "I'm sorry, I didn't understand that. Can you try rephrasing?"
 
-# Function to plot equations
-def plot_equation(equation):
-    try:
-        # Normalize the equation input
-        equation = equation.replace("^", "**").replace(" ", "")
-        
-        if "**2" in equation:  # Quadratic equation
-            equation = equation.split("=")[0]  # Remove "=0" if present
-            x = np.linspace(-10, 10, 400)
-            y = eval(equation)
-            plt.figure(figsize=(6, 4))
-            plt.plot(x, y, label=f"y = {equation}")
-        
-        else:#linear eqn
-            match = re.findall(r"([-+]?\d*\.?\d*)x([+-]?\d*\.?\d*)=(.+)", equation)
-            if not match:
-                raise ValueError("Invalid linear equation for plotting.")
-            a, b, rhs = match[0]
-            a = float(a) if a not in ("", "+", "-") else (1 if a in ("", "+") else -1)
-            b = float(b) if b else 0
-            rhs = float(eval(rhs))
-            x_vals = np.linspace(-10, 10, 400)
-            y_vals = a * x_vals + b - rhs
-            plt.figure(figsize=(6, 4))
-            plt.plot(x_vals, y_vals, label=f"y = {equation}")
-
-        # Add grid, axes, and labels
-        plt.axhline(0, color="blue", linewidth=0.5)
-        plt.axvline(0, color="blue", linewidth=0.5)
-        plt.grid(color="gray", linestyle="--", linewidth=0.5)
-        plt.title("Graph of the Equation")
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.legend()
-        
-        # Display the plot in Streamlit
-        st.pyplot(plt)
-        plt.close()  # Close the figure after plotting
-    except Exception as e:
-        st.write(f"Unable to plot the equation. Ensure it's a valid equation or function. Error: {e}")
-
 
 # Main Streamlit app
 def main():
@@ -263,12 +222,6 @@ def main():
             with open("chat_log.csv", "a", newline="", encoding="utf-8") as csvfile:
                 csv_writer = csv.writer(csvfile)
                 csv_writer.writerow([user_input, response, timestamp])
-
-            # Option to plot equations
-            if "solutions are" in response or "solution is" in response:
-                plot = st.checkbox("Plot the equation?")
-                if plot:
-                    plot_equation(user_input)
 
     elif choice == "Conversation History":
         st.header("Conversation History")
