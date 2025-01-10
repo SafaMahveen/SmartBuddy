@@ -105,9 +105,9 @@ def solve_linear(equation):
         
         # Extract coefficients and RHS
         a, b, rhs = match[0]
-        a = float(a) if a not in ("", "+", "-") else (1 if a == "+" else -1)
+        a = float(a) if a not in ("", "+", "-") else (1 if a in ("", "+") else -1)
         b = float(b) if b else 0
-        rhs = float(eval(rhs))  # Evaluate RHS to handle expressions like 2+3
+        rhs = float(eval(rhs)) 
         
         # Solve the linear equation ax + b = rhs
         x = symbols("x")
@@ -116,7 +116,6 @@ def solve_linear(equation):
         return f"The solution is: {solution[0]:.2f}"
     except Exception as e:
         return f"Error solving linear equation: {e}"
-
 
 
 # Function to extract and classify mathematical expressions
@@ -195,10 +194,30 @@ def chatbot(input_text):
 # Function to plot equations
 def plot_equation(equation):
     try:
-        x_vals = np.linspace(-10, 10, 400)
-        y_vals = eval(equation.replace("^", "**"))
-        plt.figure(figsize=(6, 4))
-        plt.plot(x_vals, y_vals, label=equation)
+        # Normalize the equation input
+        equation = equation.replace("^", "**").replace(" ", "")
+        
+        if "**2" in equation:  # Quadratic equation
+            equation = equation.split("=")[0]  # Remove "=0" if present
+            x = np.linspace(-10, 10, 400)
+            y = eval(equation)
+            plt.figure(figsize=(6, 4))
+            plt.plot(x, y, label=f"y = {equation}")
+        
+        else:#linear eqn
+            match = re.findall(r"([-+]?\d*\.?\d*)x([+-]?\d*\.?\d*)=(.+)", equation)
+            if not match:
+                raise ValueError("Invalid linear equation for plotting.")
+            a, b, rhs = match[0]
+            a = float(a) if a not in ("", "+", "-") else (1 if a in ("", "+") else -1)
+            b = float(b) if b else 0
+            rhs = float(eval(rhs))
+            x_vals = np.linspace(-10, 10, 400)
+            y_vals = a * x_vals + b - rhs
+            plt.figure(figsize=(6, 4))
+            plt.plot(x_vals, y_vals, label=f"y = {equation}")
+
+        # Add grid, axes, and labels
         plt.axhline(0, color="blue", linewidth=0.5)
         plt.axvline(0, color="blue", linewidth=0.5)
         plt.grid(color="gray", linestyle="--", linewidth=0.5)
@@ -206,9 +225,13 @@ def plot_equation(equation):
         plt.xlabel("x")
         plt.ylabel("y")
         plt.legend()
+        
+        # Display the plot in Streamlit
         st.pyplot(plt)
-    except Exception:
-        st.write("Unable to plot the equation. Please ensure it's a valid mathematical expression.")
+        plt.close()  # Close the figure after plotting
+    except Exception as e:
+        st.write(f"Unable to plot the equation. Ensure it's a valid equation or function. Error: {e}")
+
 
 # Main Streamlit app
 def main():
